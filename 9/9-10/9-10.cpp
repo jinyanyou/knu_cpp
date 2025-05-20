@@ -1,0 +1,150 @@
+#include <iostream>
+using namespace std;
+
+class Shape {
+	Shape* next;
+protected:
+	virtual void draw() = 0;
+public:
+	Shape() { next = NULL; }
+	virtual ~Shape() { }
+	void paint() {
+		draw();
+	}
+	Shape* add(Shape* p) {
+		this->next = p;
+		return p;
+	}
+	Shape* getNext() { return next; }
+};
+
+class Line : public Shape {
+protected:
+	virtual void draw() {
+		cout << "Line" << endl;
+	}
+};
+
+class Circle : public Shape {
+protected:
+	virtual void draw() {
+		cout << "Circle" << endl;
+	}
+};
+
+class Rect : public Shape {
+protected:
+	virtual void draw() {
+		cout << "Rectangle" << endl;
+	}
+};
+
+class UI : public Shape {
+public:
+	static int menu() {
+		int key;
+		cout << "삽입 : 1, 삭제 : 2, 모두보기 : 3, 종료 : 4 >> ";
+		cin >> key;
+		return key;
+	}
+	static int inputshape() {
+		int key;
+		cout << "선 : 1, 원 : 2, 사각형 : 3 >> ";
+		cin >> key;
+		return key;
+	}
+	static int deleteshape() {
+		int key;
+		cout << "삭제하고자 하는 도형의 인덱스 >> ";
+		cin >> key;
+		return key;
+	}
+};
+
+class GraphicEditor {
+	Shape* pStart;
+	Shape* pLast;
+public:
+	GraphicEditor() { pStart = pLast = NULL; }
+	void insertItem(int type) {
+		Shape* p = NULL;
+		switch (type) {
+		case 1:
+			p = new Line();
+			break;
+		case 2:
+			p = new Circle();
+			break;
+		case 3:
+			p = new Rect();
+			break;
+		default:
+			break;
+		}
+		if (pStart == NULL) {
+			pStart = p;
+			pLast = p;
+			return;
+		}
+		pLast->add(p);
+		pLast = pLast->getNext();
+	}
+
+	void deleteItem(int index) {
+		Shape* pre = pStart;
+		Shape* tmp = pStart;
+
+		if (pStart == NULL) return;
+		for (int i = 0; i < index; i++) {
+			pre = tmp;
+			tmp = tmp->getNext();
+		}
+
+		if (tmp == pStart) {
+			pStart = tmp->getNext();
+			delete tmp;
+		}
+		else {
+			pre->add(tmp->getNext());
+			delete tmp;
+		}
+	}
+	void show() {
+		Shape* tmp = pStart;
+		int i = 1;
+		while (tmp != NULL) {
+			cout << i++ << ": ";
+			tmp->paint();
+			tmp = tmp->getNext();
+		}
+	}
+	void run();
+};
+
+void GraphicEditor::run() {
+	cout << "그래픽 에디터입니다." << endl;
+	int menu, index, type;
+	while (true) {
+		menu = UI::menu();
+		switch (menu) {
+		case 1:
+			type = UI::inputshape();
+			insertItem(type);
+			break;
+		case 2:
+			index = UI::deleteshape();
+			deleteItem(index);
+			break;
+		case 3:
+			show();
+			break;
+		default:
+			return;
+		}
+	}
+}
+
+int main() {
+	GraphicEditor ge;
+	ge.run();
+}
